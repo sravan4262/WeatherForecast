@@ -1,0 +1,10 @@
+C:\Git\WeatherForecast\WeatherForecast_DB\WeatherForecast_DB\bin\Debug\WeatherForecast_DB.dacpac
+C:\Git\WeatherForecast\WeatherForecast_DB\WeatherForecast_DB\bin\Debug\WeatherForecast_DB.dll
+C:\Git\WeatherForecast\WeatherForecast_DB\WeatherForecast_DB\bin\Debug\WeatherForecast_DB.pdb
+C:\Git\WeatherForecast\WeatherForecast_DB\WeatherForecast_DB\obj\Debug\WeatherForecast_DB.sqlproj.AssemblyReference.cache
+C:\Git\WeatherForecast\WeatherForecast_DB\WeatherForecast_DB\obj\Debug\Model.xml
+C:\Git\WeatherForecast\WeatherForecast_DB\WeatherForecast_DB\obj\Debug\refactor.xml
+C:\Git\WeatherForecast\WeatherForecast_DB\WeatherForecast_DB\obj\Debug\postdeploy.sql
+C:\Git\WeatherForecast\WeatherForecast_DB\WeatherForecast_DB\obj\Debug\predeploy.sql
+C:\Git\WeatherForecast\WeatherForecast_DB\WeatherForecast_DB\obj\Debug\WeatherForecast_DB.dll
+C:\Git\WeatherForecast\WeatherForecast_DB\WeatherForecast_DB\obj\Debug\WeatherForecast_DB.pdb
