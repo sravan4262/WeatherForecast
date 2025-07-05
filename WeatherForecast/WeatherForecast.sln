@@ -1,4 +1,4 @@
-﻿
+
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.9.34622.214
@@ -12,8 +12,6 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WeatherForecast.Domain.UnitTests", "..\WeatherForecast.Domain.UnitTests\WeatherForecast.Domain.UnitTests.csproj", "{C6218D2A-9BA2-4865-926A-CD99B516F41A}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AuthenticationTester", "..\AuthenticationTester\AuthenticationTester.csproj", "{B1C85CFD-5541-4E85-81B4-DED7B1027295}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WeatherForecast.Function", "..\WeatherForecast.Function\WeatherForecast.Function\WeatherForecast.Function.csproj", "{0CD3AC73-29F4-4CED-9CA6-669B572C2BDE}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
