@@ -9,9 +9,13 @@ env:
   # Example: ACR_LOGIN_SERVER: personalproject.azurecr.io
   ACR_LOGIN_SERVER: ${{ secrets.ACR_LOGIN_SERVER }} # e.g., personalproject.azurecr.io
   WEBAPI_IMAGE_NAME: weatherforecast-webapi
-  FUNCTION_IMAGE_NAME: weatherforecast-function
   # Using Build ID as tag for unique versions, also pushing 'latest'
   IMAGE_TAG: ${{ github.sha }}
+  # Function App Specific Environment Variables
+  FUNCTION_APP_NAME: weatherforecastfunction # Your Azure Function App name
+  FUNCTION_APP_RESOURCE_GROUP: personalproject # Your Function App's resource group
+  FUNCTION_IMAGE_NAME: weatherforecast-function
+  FUNCTION_DOCKERFILE_PATH: WeatherForecast.Function/Dockerfile # Path to your Function's Dockerfile
 
 jobs:
   build-test-push:
@@ -63,41 +67,27 @@ jobs:
       # --- Azure Login for Function App Job (using OpenID Connect) ---
       # This login is also sufficient for ACR authentication if configured correctly
       - name: Azure Login for ACR (Function App)
-        uses: azure/login@v1 # Using v1 for OIDC as per your original file
+        uses: azure/login@v2 # Changed to v2
         with:
-          client-id: ${{ secrets.AZURE_CLIENT_ID }}
-          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
-          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
-          credential-type: service-principal
+          creds: ${{ secrets.AZURE_CREDENTIALS }} # Use the same creds secret
+
+      - name: Change directory to Function App
+        run: cd WeatherForecast.Function/ # This changes the directory for subsequent commands in this step
 
       - name: Build Azure Function Docker image
         run: |
-          # Build from the solution root, but specify the Dockerfile and context for the Function App
-          # The build context './WeatherForecast.Function/' is crucial here to ensure Docker finds files
-          # relative to the Function App's project folder.
-          docker build -t ${{ env.ACR_LOGIN_SERVER }}/${{ env.FUNCTION_IMAGE_NAME }}:${{ env.IMAGE_TAG }} \
-            -f ${{ env.FUNCTION_DOCKERFILE_PATH }} \
-            ./WeatherForecast.Function/ # Set build context to the Function App's folder
+          run: docker build -t ${{ secrets.ACR_LOGIN_SERVER }}/functionapp:latest .
 
       - name: Tag Azure Function Docker image as 'latest'
-        run: docker tag ${{ env.ACR_LOGIN_SERVER }}/${{ env.FUNCTION_IMAGE_NAME }}:${{ env.IMAGE_TAG }} ${{ env.ACR_LOGIN_SERVER }}/${{ env.FUNCTION_IMAGE_NAME }}:latest
+        run: docker tag ${{ secrets.ACR_LOGIN_SERVER }}/functionapp:latest
 
       - name: Push Azure Function Docker image to ACR
         run: |
-          docker push ${{ env.ACR_LOGIN_SERVER }}/${{ env.FUNCTION_IMAGE_NAME }}:${{ env.IMAGE_TAG }}
-          docker push ${{ env.ACR_LOGIN_SERVER }}/${{ env.FUNCTION_IMAGE_NAME }}:latest
-
-      - name: Clean up Function Docker images (optional)
-        if: always()
-        run: |
-          docker rmi ${{ env.ACR_LOGIN_SERVER }}/${{ env.FUNCTION_IMAGE_NAME }}:${{ env.IMAGE_TAG }} || true
-          docker rmi ${{ env.ACR_LOGIN_SERVER }}/${{ env.FUNCTION_IMAGE_NAME }}:latest || true
+          docker push ${{ secrets.ACR_LOGIN_SERVER }}/functionapp:latest
 
       - name: Deploy Azure Function App from Docker Image
         uses: azure/functions-action@v1
         with:
           app-name: ${{ env.FUNCTION_APP_NAME }}
-          resource-group: ${{ env.FUNCTION_APP_RESOURCE_GROUP }}
-          image: ${{ env.ACR_LOGIN_SERVER }}/${{ env.FUNCTION_IMAGE_NAME }}:${{ env.IMAGE_TAG }}
-          # Credentials for ACR pull from Function App are handled by setting up Managed Identity
-          # on the Function App itself to pull from ACR.
+          package: ${{ secrets.ACR_LOGIN_SERVER }}/functionapp:latest
+          publish-profile: ${{ secrets.AZURE_FUNCTIONAPP_PUBLISH_PROFILE }} # Ensure this secret is set with your Function App's publish profile
