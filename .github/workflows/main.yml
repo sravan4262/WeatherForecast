@@ -75,18 +75,19 @@ jobs:
 
       - name: Build Azure Function Docker image
         run: |
-          run: docker build -t ${{ secrets.ACR_LOGIN_SERVER }}/functionapp:latest .
+          docker build -t ${{ secrets.ACR_LOGIN_SERVER }}/${{ env.FUNCTION_IMAGE_NAME }}:${{ env.IMAGE_TAG }} .
 
       - name: Tag Azure Function Docker image as 'latest'
         run: docker tag ${{ secrets.ACR_LOGIN_SERVER }}/functionapp:latest
 
       - name: Push Azure Function Docker image to ACR
         run: |
-          docker push ${{ secrets.ACR_LOGIN_SERVER }}/functionapp:latest
+          docker push ${{ secrets.ACR_LOGIN_SERVER }}/${{ env.FUNCTION_IMAGE_NAME }}:${{ env.IMAGE_TAG }}
 
       - name: Deploy Azure Function App from Docker Image
         uses: azure/functions-action@v1
         with:
           app-name: ${{ env.FUNCTION_APP_NAME }}
-          package: ${{ secrets.ACR_LOGIN_SERVER }}/functionapp:latest
-          publish-profile: ${{ secrets.AZURE_FUNCTIONAPP_PUBLISH_PROFILE }} # Ensure this secret is set with your Function App's publish profile
+          package: ${{ secrets.ACR_LOGIN_SERVER }}/${{ env.FUNCTION_IMAGE_NAME }}:${{ env.IMAGE_TAG }}
+          publish-profile: ${{ secrets.AZURE_FUNCTIONAPP_PUBLISH_PROFILE }} # Ensure this
+          
