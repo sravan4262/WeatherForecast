@@ -65,24 +65,31 @@ jobs:
 
       # --- Azure Login for Function App Job (using OpenID Connect) ---
       # This login is also sufficient for ACR authentication if configured correctly
-      - name: Azure Login for ACR (Function App)
-        uses: azure/login@v2 # Changed to v2
+      - name: Docker Login to ACR
+        uses: azure/docker-login@v1
         with:
-          creds: ${{ secrets.AZURE_CREDENTIALS }} # Use the same creds secret
+          login-server: ${{ env.ACR_LOGIN_SERVER }}
 
       - name: Change directory to Function App
-        run: cd WeatherForecast.Function/ # This changes the directory for subsequent commands in this step
+        run: cd WeatherForecast.Function/
 
       - name: Build Azure Function Docker image
         run: |
-          docker build -t ${{ secrets.ACR_LOGIN_SERVER }}/${{ env.FUNCTION_IMAGE_NAME }}:${{ env.IMAGE_TAG }} .
+          docker build -t ${{ env.ACR_LOGIN_SERVER }}/${{ env.FUNCTION_IMAGE_NAME }}:${{ env.IMAGE_TAG }} .
 
       - name: Tag Azure Function Docker image as 'latest'
         run: docker tag ${{ env.ACR_LOGIN_SERVER }}/${{ env.FUNCTION_IMAGE_NAME }}:${{ env.IMAGE_TAG }} ${{ env.ACR_LOGIN_SERVER }}/${{ env.FUNCTION_IMAGE_NAME }}:latest
 
       - name: Push Azure Function Docker image to ACR
         run: |
-          docker push ${{ secrets.ACR_LOGIN_SERVER }}/${{ env.FUNCTION_IMAGE_NAME }}:${{ env.IMAGE_TAG }}
+          docker push ${{ env.ACR_LOGIN_SERVER }}/${{ env.FUNCTION_IMAGE_NAME }}:${{ env.IMAGE_TAG }}
+          docker push ${{ env.ACR_LOGIN_SERVER }}/${{ env.FUNCTION_IMAGE_NAME }}:latest
+
+      - name: Clean up Function Docker images (optional)
+        if: always()
+        run: |
+          docker rmi ${{ env.ACR_LOGIN_SERVER }}/${{ env.FUNCTION_IMAGE_NAME }}:${{ env.IMAGE_TAG }} || true
+          docker rmi ${{ env.ACR_LOGIN_SERVER }}/${{ env.FUNCTION_IMAGE_NAME }}:latest || true
 
       - name: Deploy Azure Function App from Docker Image
         uses: azure/functions-action@v1
