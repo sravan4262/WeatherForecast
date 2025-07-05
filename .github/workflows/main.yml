@@ -50,22 +50,48 @@ jobs:
     - name: Push Docker image to ACR
       run: docker push ${{ secrets.ACR_LOGIN_SERVER }}/myapp:latest
 
-  # 🏗️ Build the Docker image
-    - name: 🛠️ Build Docker image
-      run: |
-        docker build -f $FUNCTION_DOCKERFILE_PATH \
-          -t ${{ secrets.ACR_LOGIN_SERVER }}/$FUNCTION_IMAGE_NAME:$IMAGE_TAG .
+  build-push-and-deploy-function:
+    runs-on: ubuntu-latest    
+    
+    env:
+      # Function App Specific Environment Variables
+      FUNCTION_APP_NAME: weatherforecastfunction # Your Azure Function App name
+      FUNCTION_APP_RESOURCE_GROUP: personalproject # Your Function App's resource group
+      FUNCTION_DOCKERFILE_PATH: WeatherForecast.Function/Dockerfile # Path to your Function's Dockerfile
 
-    # 🚀 Push the Docker image to ACR
-    - name: 📤 Push Docker image to ACR
-      run: docker push ${{ secrets.ACR_LOGIN_SERVER }}/$FUNCTION_IMAGE_NAME:$IMAGE_TAG
+    steps:
+      - name: 📥 Checkout repository
+        uses: actions/checkout@v4
 
-    # ⚙️ Deploy the container to Azure Function App
-    - name: 🚀 Deploy Azure Function from Container Image
-      run: |
-        az functionapp config container set \
-          --name $FUNCTION_APP_NAME \
-          --resource-group $FUNCTION_APP_RESOURCE_GROUP \
-          --docker-custom-image-name ${{ secrets.ACR_LOGIN_SERVER }}/$FUNCTION_IMAGE_NAME:$IMAGE_TAG \
-          --enable-app-service-storage false
+      # --- Azure Login for Function App Job (using OpenID Connect) ---
+      # This login is also sufficient for ACR authentication if configured correctly
+      - name: 🚀 Azure Login
+        uses: azure/login@v2
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+      
+      - name: Login to ACR
+        run: az acr login --name personalproject    
+
+      - name: Change directory to Function App
+        run: cd WeatherForecast.Function/
+
+      # 🏗️ Build the Docker image
+      - name: 🛠️ Build Docker image
+        run: |
+          docker build -f $FUNCTION_DOCKERFILE_PATH \
+            -t ${{ secrets.ACR_LOGIN_SERVER }}/$FUNCTION_IMAGE_NAME:$IMAGE_TAG .
+
+      # 🚀 Push the Docker image to ACR
+      - name: 📤 Push Docker image to ACR
+        run: docker push ${{ secrets.ACR_LOGIN_SERVER }}/$FUNCTION_IMAGE_NAME:$IMAGE_TAG
+
+      # ⚙️ Deploy the container to Azure Function App
+      - name: 🚀 Deploy Azure Function from Container Image
+        run: |
+          az functionapp config container set \
+            --name $FUNCTION_APP_NAME \
+            --resource-group $FUNCTION_APP_RESOURCE_GROUP \
+            --docker-custom-image-name ${{ secrets.ACR_LOGIN_SERVER }}/$FUNCTION_IMAGE_NAME:$IMAGE_TAG \
+            --enable-app-service-storage false
           
