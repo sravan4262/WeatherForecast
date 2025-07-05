@@ -69,6 +69,8 @@ jobs:
         uses: azure/docker-login@v1
         with:
           login-server: ${{ env.ACR_LOGIN_SERVER }}
+          username: ${{ secrets.ACR_LOGIN_SERVER.clientId }}    # <--- Add this line
+          password: ${{ secrets.ACR_LOGIN_SERVER.clientSecret }} # <--- Add this line
 
       - name: Change directory to Function App
         run: cd WeatherForecast.Function/
