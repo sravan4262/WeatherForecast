@@ -58,6 +58,8 @@ jobs:
       FUNCTION_APP_NAME: weatherforecastfunction # Your Azure Function App name
       FUNCTION_APP_RESOURCE_GROUP: personalproject # Your Function App's resource group
       FUNCTION_DOCKERFILE_PATH: WeatherForecast.Function/Dockerfile # Path to your Function's Dockerfile
+      FUNCTION_IMAGE_NAME: weatherforecast-function
+      IMAGE_TAG: latest
 
     steps:
       - name: 📥 Checkout repository
@@ -73,14 +75,13 @@ jobs:
       - name: Login to ACR
         run: az acr login --name personalproject    
 
-      - name: Change directory to Function App
-        run: cd WeatherForecast.Function/
-
       # 🏗️ Build the Docker image
       - name: 🛠️ Build Docker image
         run: |
-          docker build -f $FUNCTION_DOCKERFILE_PATH \
-            -t ${{ secrets.ACR_LOGIN_SERVER }}/$FUNCTION_IMAGE_NAME:$IMAGE_TAG .
+          docker build -f WeatherForecast.Function/Dockerfile \
+          -t ${{ secrets.ACR_LOGIN_SERVER }}/$FUNCTION_IMAGE_NAME:$IMAGE_TAG \
+          WeatherForecast.Function
+
 
       # 🚀 Push the Docker image to ACR
       - name: 📤 Push Docker image to ACR
@@ -94,4 +95,10 @@ jobs:
             --resource-group $FUNCTION_APP_RESOURCE_GROUP \
             --docker-custom-image-name ${{ secrets.ACR_LOGIN_SERVER }}/$FUNCTION_IMAGE_NAME:$IMAGE_TAG \
             --enable-app-service-storage false
+      
+      - name: 🔄 Restart Function App
+        run: |
+          az functionapp restart \
+            --name $FUNCTION_APP_NAME \
+            --resource-group $FUNCTION_APP_RESOURCE_GROUP      
           
