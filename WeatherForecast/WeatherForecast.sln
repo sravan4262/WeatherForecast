@@ -13,6 +13,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WeatherForecast.Domain.Unit
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AuthenticationTester", "..\AuthenticationTester\AuthenticationTester.csproj", "{B1C85CFD-5541-4E85-81B4-DED7B1027295}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WeatherForecast.Function", "..\WeatherForecast.Function\WeatherForecast.Function\WeatherForecast.Function.csproj", "{0CD3AC73-29F4-4CED-9CA6-669B572C2BDE}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -83,6 +85,18 @@ Global
 		{B1C85CFD-5541-4E85-81B4-DED7B1027295}.Release|x64.Build.0 = Release|Any CPU
 		{B1C85CFD-5541-4E85-81B4-DED7B1027295}.Release|x86.ActiveCfg = Release|Any CPU
 		{B1C85CFD-5541-4E85-81B4-DED7B1027295}.Release|x86.Build.0 = Release|Any CPU
+		{0CD3AC73-29F4-4CED-9CA6-669B572C2BDE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0CD3AC73-29F4-4CED-9CA6-669B572C2BDE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0CD3AC73-29F4-4CED-9CA6-669B572C2BDE}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{0CD3AC73-29F4-4CED-9CA6-669B572C2BDE}.Debug|x64.Build.0 = Debug|Any CPU
+		{0CD3AC73-29F4-4CED-9CA6-669B572C2BDE}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{0CD3AC73-29F4-4CED-9CA6-669B572C2BDE}.Debug|x86.Build.0 = Debug|Any CPU
+		{0CD3AC73-29F4-4CED-9CA6-669B572C2BDE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0CD3AC73-29F4-4CED-9CA6-669B572C2BDE}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0CD3AC73-29F4-4CED-9CA6-669B572C2BDE}.Release|x64.ActiveCfg = Release|Any CPU
+		{0CD3AC73-29F4-4CED-9CA6-669B572C2BDE}.Release|x64.Build.0 = Release|Any CPU
+		{0CD3AC73-29F4-4CED-9CA6-669B572C2BDE}.Release|x86.ActiveCfg = Release|Any CPU
+		{0CD3AC73-29F4-4CED-9CA6-669B572C2BDE}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
