@@ -8,6 +8,7 @@ COPY WeatherForecast/WeatherForecast.csproj WeatherForecast/
 COPY WeatherForecast.Domain/WeatherForecast.Domain.csproj WeatherForecast.Domain/
 COPY WeatherForecast.Domain.UnitTests/WeatherForecast.Domain.UnitTests.csproj WeatherForecast.Domain.UnitTests/
 COPY WeatherForecast.WebApi.UnitTests/WeatherForecast.WebApi.UnitTests.csproj WeatherForecast.WebApi.UnitTests/
+COPY AuthenticationTester/AuthenticationTester.csproj AuthenticationTester/
 
 # Restore dependencies
 WORKDIR /src/WeatherForecast
