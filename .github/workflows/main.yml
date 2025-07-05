@@ -21,7 +21,7 @@ jobs:
       run: dotnet restore
 
     - name: 🧪 Run unit tests
-      run: dotnet test ./WeatherForecast.Domain.UnitTests.csproj --no-build --verbosity normal
+      run: dotnet test ./WeatherForecast.Domain.UnitTests/WeatherForecast.Domain.UnitTests.csproj --no-build --verbosity normal
 
     - name: 🚀 Azure Login
       uses: azure/login@v2
