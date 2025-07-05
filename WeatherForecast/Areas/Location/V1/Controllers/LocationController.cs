@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using WeatherForecast.Areas.Location.V1.Mappers;
 using WeatherForecast.Areas.Location.V1.ViewModels;
 using WeatherForecast.Domain.Business.Interfaces;
@@ -29,6 +30,7 @@ namespace WeatherForecast.Areas.Location.V1.Controllers
         [Route("locations")]
         [ProducesResponseType(typeof(List<Domain.Entities.Location>), 200)]
         [ProducesResponseType(typeof(string), 500)]
+        [Authorize(policy:"location.locations")]
         public async Task<IActionResult> GetLocations()
         {
             var locations = await _locationRetriever.GetLocationsAsync();

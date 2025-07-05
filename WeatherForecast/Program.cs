@@ -1,4 +1,8 @@
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Identity.Web;
+using Microsoft.OpenApi.Models;
 using System;
 using WeatherForecast.Areas.Location.V1.Mappers;
 using WeatherForecast.Areas.WeatherForecast.V1.Mappers;
@@ -18,6 +22,24 @@ builder.Services.AddControllers().AddJsonOptions(options =>
 builder.Services.AddDbContext<WeatherForecastDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("WeatherForecast")));
 
+// --- Configure Azure AD Authentication ---
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddMicrosoftIdentityWebApi(builder.Configuration.GetSection("AzureAd"));
+
+// --- Configure Authorization Policies for Scopes ---
+builder.Services.AddAuthorization(options =>
+{
+    options.AddPolicy("RequiresForecastRetrieveAllScope", policy =>
+    {
+        policy.RequireAuthenticatedUser(); // Must be authenticated
+        policy.RequireClaim("http://schemas.microsoft.com/identity/claims/scope", "location.locations");
+    });
+
+    // Optional: A default policy if you want all APIs to require authentication by default
+    options.FallbackPolicy = new AuthorizationPolicyBuilder()
+        .RequireAuthenticatedUser()
+        .Build();
+});
 
 builder.Services.AddHttpClient<IWeatherRetriever, WeatherRetriever>(client =>
 {
@@ -40,7 +62,36 @@ builder.Services.AddScoped<IWeatherForecastRepository, WeatherForecastRepository
 
 
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+builder.Services.AddSwaggerGen(c =>
+{
+    c.SwaggerDoc("v1", new OpenApiInfo { Title = "WeatherForecast API", Version = "v1" });
+
+    // Define the security scheme for JWT Bearer tokens
+    c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+    {
+        Description = "JWT Authorization header using the Bearer scheme. Example: \"Authorization: Bearer {token}\"",
+        Name = "Authorization",
+        In = ParameterLocation.Header,
+        Type = SecuritySchemeType.ApiKey,
+        Scheme = "Bearer"
+    });
+
+    // Require the Bearer token for all operations (can be refined per operation)
+    c.AddSecurityRequirement(new OpenApiSecurityRequirement
+    {
+        {
+            new OpenApiSecurityScheme
+            {
+                Reference = new OpenApiReference
+                {
+                    Type = ReferenceType.SecurityScheme,
+                    Id = "Bearer"
+                }
+            },
+            new string[] {}
+        }
+    });
+});
 
 var app = builder.Build();
 
@@ -48,7 +99,7 @@ var app = builder.Build();
     app.UseSwaggerUI();
 
 app.UseHttpsRedirection();
-
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
