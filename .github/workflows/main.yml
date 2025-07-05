@@ -91,8 +91,8 @@ jobs:
           az functionapp config container set \
             --name $FUNCTION_APP_NAME \
             --resource-group $FUNCTION_APP_RESOURCE_GROUP \
-            --docker-custom-image-name ${{ secrets.ACR_LOGIN_SERVER }}/$FUNCTION_IMAGE_NAME:$IMAGE_TAG \
-            --enable-app-service-storage false
+            --docker-custom-image-name ${{ secrets.ACR_LOGIN_SERVER }}/$FUNCTION_IMAGE_NAME:$IMAGE_TAG
+           
       
       - name: 🔄 Restart Function App
         run: |
