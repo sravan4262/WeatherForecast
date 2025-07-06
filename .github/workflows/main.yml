@@ -78,7 +78,9 @@ jobs:
       # 🏗️ Build the Docker image
       - name: 🛠️ Build Docker image
         run: |
-          docker build -t ${{ secrets.ACR_LOGIN_SERVER }}/$FUNCTION_IMAGE_NAME:$IMAGE_TAG .
+          docker build -t ${{ secrets.ACR_LOGIN_SERVER }}/$FUNCTION_IMAGE_NAME:$IMAGE_TAG \
+            -f WeatherForecast.Function/WeatherForecast.Function/Dockerfile \ # <--- Specify the correct Dockerfile path
+            WeatherForecast.Function/                 # <--- Set the build context to the Function's directory
 
 
       # 🚀 Push the Docker image to ACR
