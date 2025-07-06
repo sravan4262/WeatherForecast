@@ -59,15 +59,24 @@ jobs:
       run: |
         az aks install-cli   
 
-    - name: ⛓️ Get AKS Credentials
-      run: az aks get-credentials --resource-group personalproject --name aks-personalproject-dev --overwrite-existing --admin
+    - name: Azure Login
+      uses: azure/login@v2
+      with:
+        creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+    - name:  Get AKS Credentials
+      uses: azure/aks-set-context@v3
+      with:
+        resource-group: personalproject
+        cluster-name: aks-personalproject-dev
 
     - name: Replace image tag in deployment.yaml
       run: |
-          sed -i 's|weatherforecast-webapi:latest|weatherforecast-webapi:${{ github.sha }}|g' deploy/deployment.yaml
+        sed -i 's|weatherforecast-webapi:latest|weatherforecast-webapi:${{ github.sha }}|g' deploy/deployment.yaml
 
     - name: Deploy to AKS
       run: kubectl apply -f deploy/deployment.yaml
+
 
   
   build-push-and-deploy-function:
