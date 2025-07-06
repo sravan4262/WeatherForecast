@@ -75,12 +75,12 @@ jobs:
       - name: Login to ACR
         run: az acr login --name personalproject    
 
-      # 🏗️ Build the Docker image
-      - name: 🛠️ Build Docker image
+      # 🏗️ Build the Docker image for the Function App
+      - name: 🛠️ Build Function App Docker image
         run: |
           docker build -t ${{ secrets.ACR_LOGIN_SERVER }}/$FUNCTION_IMAGE_NAME:$IMAGE_TAG \
             -f WeatherForecast.Function/Dockerfile \
-            WeatherForecast.Function/                
+            ./WeatherForecast.Function/               
 
 
       # 🚀 Push the Docker image to ACR
