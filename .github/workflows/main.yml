@@ -46,13 +46,15 @@ jobs:
 
       - name: 🔄 Replace connection string in appsettings.json
         run: |
-          $conn = @'
+          $connRaw = @'
           ${{ steps.get-secret.outputs.WeatherForecastConnectionString }}
           '@
-
-              $json = Get-Content -Raw -Path "WeatherForecast/appsettings.json" | ConvertFrom-Json
-              $json.ConnectionStrings.WeatherForecast = $conn
-              $json | ConvertTo-Json -Depth 10 | Set-Content -Path "appsettings.Production.json" -Encoding UTF8
+              # Escape inner double quotes for JSON
+              $connEscaped = $connRaw -replace '"', '\"'
+              $jsonPath = "WeatherForecast/appsettings.json"
+              $json = Get-Content -Raw -Path $jsonPath | ConvertFrom-Json
+              $json.ConnectionStrings.WeatherForecast = $connEscaped
+              $json | ConvertTo-Json -Depth 10 | Set-Content -Path $jsonPath -Encoding UTF8
         shell: pwsh 
 
       - name: 🔐 Login to ACR
