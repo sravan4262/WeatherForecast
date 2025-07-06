@@ -64,15 +64,28 @@ jobs:
       run: |
         az aks install-cli   
 
-    - name: Set AKS credentials # <-- REPLACE THIS STEP
-      # The previous 'az aks get-credentials' command will fail because of disabled local accounts.
-      # Use the dedicated action for AKS context to handle AAD-only clusters.
-      uses: azure/aks-set-context@v3
-      with:
-        resource-group: personalproject
-        cluster-name: aks-personalproject-dev
-        creds: ${{ secrets.AZURE_CREDENTIALS_AKS }}
+    - name: Set AKS credentials using Service Principal Token 
+      run: |
+        KUBECONFIG_OUTPUT=$(az aks get-credentials \
+            --resource-group personalproject \
+            --name aks-personalproject-dev \
+            --overwrite-existing \
+            --admin 2>&1 || true)
 
+        ACCESS_TOKEN=$(az account get-access-token \
+            --resource https://management.azure.com/ \ # Scope for Azure Management (which includes AKS API)
+            --query accessToken \
+            --output tsv)
+
+        kubectl config set-credentials \
+            "aks-personalproject-dev" \ # Use your cluster name as the user entry name
+            --token="${ACCESS_TOKEN}"
+
+        kubectl config set-context \
+            "aks_personalproject_dev_aks-personalproject-dev" \ # Use the exact context name
+            --user="aks-personalproject-dev"
+
+        echo "Kubeconfig updated with Service Principal token."
 
     - name: Replace image tag in deployment.yaml
       run: |
