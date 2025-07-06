@@ -88,16 +88,24 @@ jobs:
 
     - name: 📦 Build SQL Project
       run: msbuild WeatherForecast_DB/WeatherForecast_DB/WeatherForecast_DB.sqlproj /p:Configuration=Release
+      
+    - name: Find SqlPackage.exe
+      run: |
+        Get-Command SqlPackage.exe
+        Get-ChildItem "C:\Program Files\Microsoft SQL Server\" -Recurse -Filter SqlPackage.exe
+      shell: powershell
 
     - name: 🚀 Publish DACPAC to Azure SQL Database
       run: |
-        & "C:\Program Files\Microsoft SQL Server\160\DAC\bin\SqlPackage.exe" /Action:Publish `
+        & "C:\Program Files (x86)\Microsoft SQL Server\150\DAC\bin\SqlPackage.exe" /Action:Publish `
           /SourceFile:"WeatherForecast_DB\WeatherForecast_DB\bin\Release\WeatherForecast_DB.dacpac" `
           /TargetServerName:"$env:SQL_SERVER" `
           /TargetDatabaseName:"$env:SQL_DB" `
           /TargetUser:"$env:SQL_USER" `
           /TargetPassword:"$env:SQL_PASSWORD" `
           /p:BlockOnPossibleDataLoss=false
+      shell: powershell
+  
        
 
   build-push-and-deploy-function:
