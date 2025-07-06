@@ -1,126 +1,70 @@
-name: Build, Test, and Push Docker Image to ACR
+name: Build, Test, and Deploy to ACR, AKS, and Azure Function
 
 on:
   push:
     branches: [ main ]
 
 env:
-  # ACR Details (set these as GitHub Action secrets or Repository variables)
-  # Example: ACR_LOGIN_SERVER: personalproject.azurecr.io
-  ACR_LOGIN_SERVER: ${{ secrets.ACR_LOGIN_SERVER }} # e.g., personalproject.azurecr.io
-  WEBAPI_IMAGE_NAME: weatherforecast-webapi
-  # Using Build ID as tag for unique versions, also pushing 'latest'
+  ACR_LOGIN_SERVER: ${{ secrets.ACR_LOGIN_SERVER }}
   IMAGE_TAG: ${{ github.sha }}
-  # Function App Specific Environment Variables
-  FUNCTION_APP_NAME: weatherforecastfunction # Your Azure Function App name
-  FUNCTION_APP_RESOURCE_GROUP: personalproject # Your Function App's resource group
+  RESOURCE_GROUP: personalproject
+  CLUSTER_NAME: aks-personalproject-dev
+  WEBAPI_IMAGE_NAME: weatherforecast-webapi
   FUNCTION_IMAGE_NAME: weatherforecast-function
-  FUNCTION_DOCKERFILE_PATH: WeatherForecast.Function/Dockerfile # Path to your Function's Dockerfile
+  FUNCTION_APP_NAME: weatherforecastfunction
+  FUNCTION_DOCKERFILE_PATH: WeatherForecast.Function/Dockerfile
 
 jobs:
-  build-test-push:
+  build-push-api:
     runs-on: ubuntu-latest
-
     steps:
-    - name: 📥 Checkout repository
-      uses: actions/checkout@v4
+      - name: 📥 Checkout repository
+        uses: actions/checkout@v4
 
-    - name: 🧪 Set up .NET
-      uses: actions/setup-dotnet@v4
-      with:
-        dotnet-version: '8.0.x'
+      - name: 🧪 Set up .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
 
-    - name: 🛠️ Restore dependencies
-      run: dotnet restore ./WeatherForecast/WeatherForecast.sln
+      - name: 🛠️ Restore dependencies
+        run: dotnet restore ./WeatherForecast/WeatherForecast.sln
 
-    - name: 🧪 Run unit tests
-      run: dotnet test ./WeatherForecast.Domain.UnitTests/WeatherForecast.Domain.UnitTests.csproj --no-build --verbosity normal
+      - name: 🧪 Run unit tests
+        run: dotnet test ./WeatherForecast.Domain.UnitTests/WeatherForecast.Domain.UnitTests.csproj --no-build --verbosity normal
 
-    - name: 🚀 Azure Login
-      uses: azure/login@v2
-      with:
-        creds: ${{ secrets.AZURE_CREDENTIALS }}
+      - name: 🚀 Azure Login
+        uses: azure/login@v2
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS_AKS }}
 
-    - name: Login to ACR
-      run: az acr login --name personalproject
+      - name: 🔐 Login to ACR
+        run: az acr login --name ${{ env.ACR_LOGIN_SERVER }}
 
-    - name: Build Docker image
-      run: docker build -t ${{ secrets.ACR_LOGIN_SERVER }}/myapp:latest .
+      - name: 🐳 Build and Push Docker Image
+        run: |
+          docker build -t ${{ env.ACR_LOGIN_SERVER }}/${{ env.WEBAPI_IMAGE_NAME }}:${{ env.IMAGE_TAG }} .
+          docker push ${{ env.ACR_LOGIN_SERVER }}/${{ env.WEBAPI_IMAGE_NAME }}:${{ env.IMAGE_TAG }}
 
-    - name: Push Docker image to ACR
-      run: docker push ${{ secrets.ACR_LOGIN_SERVER }}/myapp:latest
-   
-    - name: 🛠️ Set up kubectl and kubelogin
-      uses: azure/setup-kubectl@v3
-      with:
-        version: 'latest'
+      - name: 🛠️ Set up kubectl
+        uses: azure/setup-kubectl@v3
+        with:
+          version: 'latest'
 
-    - name: Azure Login
-      uses: azure/login@v2
-      with:
-        creds: ${{ secrets.AZURE_CREDENTIALS_AKS }}    
+      - name: 👥 Get AKS Credentials
+        run: |
+          az aks get-credentials \
+            --resource-group ${{ env.RESOURCE_GROUP }} \
+            --name ${{ env.CLUSTER_NAME }} \
+            --overwrite-existing
 
-    - name: 🛠️ Install kubelogin
-      run: |
-        az aks install-cli   
+      - name: 📝 Replace image tag in deployment.yaml
+        run: |
+          sed -i "s|weatherforecast-webapi:latest|weatherforecast-webapi:${{ env.IMAGE_TAG }}|g" deploy/deployment.yaml
+          sed -i "s|personalproject.azurecr.io|${{ env.ACR_LOGIN_SERVER }}|g" deploy/deployment.yaml
 
-    - name: Set AKS credentials using Service Principal Token
-      run: |
-        # Get the kubeconfig (without trying to get an AAD token yet)
-        # --admin will try to get static credentials, which is blocked by disabled local accounts.
-        # However, it still outputs the basic cluster config (server, CA cert).
-        # We redirect stderr to stdout and allow failure using '|| true' to capture all output.
-        KUBECONFIG_CONTENT=$(az aks get-credentials \
-            --resource-group personalproject \
-            --name aks-personalproject-dev \
-            --overwrite-existing \
-            --admin 2>&1 || true)
+      - name: 🚀 Deploy to AKS
+        run: kubectl apply -f deploy/deployment.yaml
 
-        # Log the output to understand what 'az aks get-credentials' returns.
-        # This is for debugging purposes; you might remove it once it works.
-        echo "az aks get-credentials output:"
-        echo "$KUBECONFIG_CONTENT"
-
-        # Manually get an Azure AD access token for the Service Principal
-        # This token is specifically for accessing the Kubernetes API
-        # The resource URL is correct for Azure Management Plane, which AKS API is part of.
-        ACCESS_TOKEN=$(az account get-access-token \
-            --resource "https://management.azure.com/" \
-            --query accessToken \
-            --output tsv)
-
-        # Log the token acquisition success (for debugging)
-        echo "Successfully acquired Azure AD access token."
-
-        # Extract the cluster name and context name using Azure CLI's default conventions.
-        # This makes it more robust than hardcoding if names ever change slightly.
-        CLUSTER_NAME="aks-personalproject-dev" # Based on your input
-        RESOURCE_GROUP="personalproject" # Based on your input
-        KUBECTL_USER_NAME="${CLUSTER_NAME}"
-        KUBECTL_CONTEXT_NAME="aks_${RESOURCE_GROUP}_${CLUSTER_NAME}" # Standard convention
-
-        echo "Updating kubeconfig for user: ${KUBECTL_USER_NAME} in context: ${KUBECTL_CONTEXT_NAME}"
-
-        # Update the kubeconfig file with the obtained token
-        # This sets the 'user' entry for your cluster to use the token.
-        kubectl config set-credentials \
-            "${KUBECTL_USER_NAME}" \
-            --token="${ACCESS_TOKEN}"
-
-        # Ensure the current context points to the updated user and cluster.
-        kubectl config set-context \
-            "${KUBECTL_CONTEXT_NAME}" \
-            --user="${KUBECTL_USER_NAME}"
-
-        echo "Kubeconfig updated with Service Principal token."
-
-    - name: Replace image tag in deployment.yaml
-      run: |
-        sed -i "s|weatherforecast-webapi:latest|weatherforecast-webapi:${{ github.sha }}|g" deploy/deployment.yaml
-
-    - name: Deploy to AKS
-      run: kubectl apply -f deploy/deployment.yaml
-  
   build-push-and-deploy-function:
     runs-on: ubuntu-latest    
     
@@ -172,4 +116,4 @@ jobs:
           az functionapp restart \
             --name $FUNCTION_APP_NAME \
             --resource-group $FUNCTION_APP_RESOURCE_GROUP      
-          
+        
