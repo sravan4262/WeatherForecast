@@ -42,8 +42,8 @@ namespace WeatherForecast.Controllers
         }
 
         /// <summary>
-        /// This endpoint requires an authenticated user with the 'RequiresForecastReadScope' policy.
-        /// This policy is defined in Program.cs to require the 'forecast.read' scope.
+        /// This endpoint requires an authenticated user with the locations policy.
+        /// This policy is defined in Program.cs to require the 'location.locations' scope.
         /// </summary>
         /// <returns>A message indicating successful authorization with the required scope.</returns>
         [HttpGet("scoped-read")]
