@@ -71,6 +71,7 @@ jobs:
       with:
         resource-group: personalproject
         cluster-name: aks-personalproject-dev
+        creds: ${{ secrets.AZURE_CREDENTIALS_AKS }}
 
 
     - name: Replace image tag in deployment.yaml
