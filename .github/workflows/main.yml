@@ -50,6 +50,20 @@ jobs:
     - name: Push Docker image to ACR
       run: docker push ${{ secrets.ACR_LOGIN_SERVER }}/myapp:latest
 
+    - name: Set AKS context
+      run: |
+          az aks get-credentials \
+            --resource-group ${{ secrets.AKS_RESOURCE_GROUP }} \
+            --name ${{ secrets.AKS_CLUSTER_NAME }} \
+            --overwrite-existing
+
+    - name: Replace image tag in deployment.yaml
+      run: |
+          sed -i 's|weatherforecast-webapi:latest|weatherforecast-webapi:${{ github.sha }}|g' deploy/deployment.yaml
+
+    - name: Deploy to AKS
+      run: kubectl apply -f deploy/deployment.yaml
+
   build-push-and-deploy-function:
     runs-on: ubuntu-latest    
     
