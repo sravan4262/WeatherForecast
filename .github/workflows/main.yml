@@ -50,12 +50,8 @@ jobs:
     - name: Push Docker image to ACR
       run: docker push ${{ secrets.ACR_LOGIN_SERVER }}/myapp:latest
 
-    - name: Set AKS context
-      run: |
-          az aks get-credentials \
-            --resource-group ${{ secrets.AKS_RESOURCE_GROUP }} \
-            --name ${{ secrets.AKS_CLUSTER_NAME }} \
-            --overwrite-existing
+    - name: ⛓️ Get AKS Credentials
+      run: az aks get-credentials --resource-group personalproject --name aks-personalproject-dev --overwrite-existing
 
     - name: Replace image tag in deployment.yaml
       run: |
