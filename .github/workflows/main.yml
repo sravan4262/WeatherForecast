@@ -50,7 +50,7 @@ jobs:
           ${{ steps.get-secret.outputs.WeatherForecastConnectionString }}
           '@
 
-              $json = Get-Content -Raw -Path "appsettings.json" | ConvertFrom-Json
+              $json = Get-Content -Raw -Path "WeatherForecast/appsettings.json" | ConvertFrom-Json
               $json.ConnectionStrings.WeatherForecast = $conn
               $json | ConvertTo-Json -Depth 10 | Set-Content -Path "appsettings.Production.json" -Encoding UTF8
         shell: pwsh 
