@@ -57,29 +57,28 @@ jobs:
               $json | ConvertTo-Json -Depth 10 | Set-Content -Path $jsonPath -Encoding UTF8
         shell: pwsh 
 
-      - name: 🔐 Login to ACR
-        run: az acr login --name ${{ env.ACR_LOGIN_SERVER }}
-
-      - name: 🐳 Build and Push Docker Image
-        run: |
-          docker build -t ${{ env.ACR_LOGIN_SERVER }}/${{ env.WEBAPI_IMAGE_NAME }}:${{ env.IMAGE_TAG }} .
-          docker push ${{ env.ACR_LOGIN_SERVER }}/${{ env.WEBAPI_IMAGE_NAME }}:${{ env.IMAGE_TAG }}
-
       - name: 🛠️ Set up kubectl
         uses: azure/setup-kubectl@v3
         with:
           version: 'latest'
-
-          # --- Install kubelogin for AKS authentication ---
+      
       - name: 🔧 Install kubelogin 
-        run: az aks install-cli    
+        run: az aks install-cli  
 
       - name: 👥 Get AKS Credentials
         run: |
           az aks get-credentials \
             --resource-group ${{ env.RESOURCE_GROUP }} \
             --name ${{ env.CLUSTER_NAME }} \
-            --overwrite-existing
+            --overwrite-existing     
+
+      - name: 🔐 Login to ACR
+        run: az acr login --name ${{ env.ACR_LOGIN_SERVER }}
+
+      - name: 🐳 Build and Push Docker Image
+        run: |
+          docker build -t ${{ env.ACR_LOGIN_SERVER }}/${{ env.WEBAPI_IMAGE_NAME }}:${{ env.IMAGE_TAG }} .
+          docker push ${{ env.ACR_LOGIN_SERVER }}/${{ env.WEBAPI_IMAGE_NAME }}:${{ env.IMAGE_TAG }}      
       
       - name: 📝 Replace image tag in deployment.yaml
         run: |
