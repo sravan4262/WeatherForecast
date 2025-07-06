@@ -58,7 +58,7 @@
     <Folder Include="Properties" />
   </ItemGroup>
   <ItemGroup>
-    <Build Include="Location.sql" />
-    <Build Include="WeatherForecast.sql" />
+    <Build Include="Tables\Location.sql" />
+    <Build Include="Tables\WeatherForecast.sql" />
   </ItemGroup>
 </Project>
