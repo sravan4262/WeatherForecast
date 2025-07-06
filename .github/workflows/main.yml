@@ -68,6 +68,48 @@ jobs:
 
       - name: 🚀 Deploy to AKS
         run: kubectl apply -f deploy/deployment.yaml
+        
+
+  deploy-sql:
+    runs-on: ubuntu-latest
+    
+    env:
+      SQL_SERVER: ${{ secrets.AZURE_SQL_SERVER }}
+      SQL_DB: ${{ secrets.AZURE_SQL_DB }}
+      SQL_USER: sravan4262
+      SQL_PASSWORD: ${{ secrets.AZURE_SQL_PASSWORD }}
+
+    steps:
+    - name: 📥 Checkout Repository
+      uses: actions/checkout@v4
+
+    - name: 🛠️ Set up .NET SDK
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: '8.0.x'
+
+    - name: 🛠️ Install SqlPackage
+      run: |
+        curl -L -o sqlpackage.zip "https://aka.ms/sqlpackage-linux"
+        unzip sqlpackage.zip -d sqlpackage
+        chmod a+x sqlpackage/sqlpackage
+        sudo mv sqlpackage/sqlpackage /usr/local/bin/
+
+    - name: 📦 Build SQL Project
+      run: |
+        dotnet build WeatherForecast_DB/WeatherForecast_DB.sqlproj --configuration Release
+
+    - name: 🚀 Publish DACPAC to Azure SQL Database
+      run: |
+        /usr/local/bin/sqlpackage \
+          /Action:Publish \
+          /SourceFile:WeatherForecast_DB/bin/Release/WeatherForecast_DB.dacpac \
+          /TargetServerName:"$SQL_SERVER" \
+          /TargetDatabaseName:"$SQL_DB" \
+          /TargetUser:"$SQL_USER" \
+          /TargetPassword:"$SQL_PASSWORD" \
+          /p:BlockOnPossibleDataLoss=false
+       
 
   build-push-and-deploy-function:
     runs-on: ubuntu-latest    
