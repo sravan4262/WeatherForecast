@@ -55,21 +55,23 @@ jobs:
       with:
         version: 'latest'
 
+    - name: Azure Login
+      uses: azure/login@v2
+      with:
+        creds: ${{ secrets.AZURE_CREDENTIALS_AKS }}    
+
     - name: 🛠️ Install kubelogin
       run: |
         az aks install-cli   
 
-    - name: Azure Login
-      uses: azure/login@v2
+    - name: Set AKS credentials # <-- REPLACE THIS STEP
+      # The previous 'az aks get-credentials' command will fail because of disabled local accounts.
+      # Use the dedicated action for AKS context to handle AAD-only clusters.
+      uses: azure/aks-set-context@v3
       with:
-        creds: ${{ secrets.AZURE_CREDENTIALS_AKS }}
+        resource-group: personalproject
+        cluster-name: aks-personalproject-dev
 
-    - name: Set AKS credentials
-      run: |
-        az aks get-credentials \
-          --resource-group personalproject \
-          --name aks-personalproject-dev \
-          --overwrite-existing
 
     - name: Replace image tag in deployment.yaml
       run: |
