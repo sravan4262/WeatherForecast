@@ -49,6 +49,15 @@ jobs:
 
     - name: Push Docker image to ACR
       run: docker push ${{ secrets.ACR_LOGIN_SERVER }}/myapp:latest
+   
+    - name: 🛠️ Set up kubectl and kubelogin
+      uses: azure/setup-kubectl@v3
+      with:
+        version: 'latest'
+
+    - name: 🛠️ Install kubelogin
+      run: |
+        az aks install-cli   
 
     - name: ⛓️ Get AKS Credentials
       run: az aks get-credentials --resource-group personalproject --name aks-personalproject-dev --overwrite-existing
@@ -60,6 +69,7 @@ jobs:
     - name: Deploy to AKS
       run: kubectl apply -f deploy/deployment.yaml
 
+  
   build-push-and-deploy-function:
     runs-on: ubuntu-latest    
     
