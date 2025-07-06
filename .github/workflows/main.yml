@@ -60,7 +60,7 @@ jobs:
         az aks install-cli   
 
     - name: ⛓️ Get AKS Credentials
-      run: az aks get-credentials --resource-group personalproject --name aks-personalproject-dev --overwrite-existing
+      run: az aks get-credentials --resource-group personalproject --name aks-personalproject-dev --overwrite-existing --admin
 
     - name: Replace image tag in deployment.yaml
       run: |
