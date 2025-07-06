@@ -68,7 +68,7 @@ jobs:
 
       - name: 🚀 Deploy to AKS
         run: kubectl apply -f deploy/deployment.yaml
-        
+
 
   deploy-sql:
     runs-on: ubuntu-latest
@@ -97,13 +97,13 @@ jobs:
 
     - name: 📦 Build SQL Project
       run: |
-        dotnet build WeatherForecast_DB/WeatherForecast_DB.sqlproj --configuration Release
+        dotnet build WeatherForecast_DB/WeatherForecast_DB/WeatherForecast_DB.sqlproj --configuration Release
 
     - name: 🚀 Publish DACPAC to Azure SQL Database
       run: |
         /usr/local/bin/sqlpackage \
           /Action:Publish \
-          /SourceFile:WeatherForecast_DB/bin/Release/WeatherForecast_DB.dacpac \
+          /SourceFile:WeatherForecast_DB/WeatherForecast_DB/bin/Release/WeatherForecast_DB.dacpac \
           /TargetServerName:"$SQL_SERVER" \
           /TargetDatabaseName:"$SQL_DB" \
           /TargetUser:"$SQL_USER" \
