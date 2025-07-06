@@ -89,16 +89,11 @@ jobs:
     - name: 📦 Build SQL Project
       run: msbuild WeatherForecast_DB/WeatherForecast_DB/WeatherForecast_DB.sqlproj /p:Configuration=Release
 
-    - name: Download and install SqlPackage
+    - name: Download and run SqlPackage
       run: |
         Invoke-WebRequest -Uri https://aka.ms/sqlpackage-windows -OutFile sqlpackage.zip
         Expand-Archive -LiteralPath sqlpackage.zip -DestinationPath sqlpackage
-        $env:PATH += ";${PWD}\sqlpackage"
-      shell: powershell
-
-    - name: Publish DACPAC to Azure SQL Database
-      run: |
-        sqlpackage.exe /Action:Publish `
+        .\sqlpackage\sqlpackage.exe /Action:Publish `
           /SourceFile:"WeatherForecast_DB\WeatherForecast_DB\bin\Release\WeatherForecast_DB.dacpac" `
           /TargetServerName:"$env:SQL_SERVER" `
           /TargetDatabaseName:"$env:SQL_DB" `
@@ -106,6 +101,7 @@ jobs:
           /TargetPassword:"$env:SQL_PASSWORD" `
           /p:BlockOnPossibleDataLoss=false
       shell: powershell
+
   
 
   build-push-and-deploy-function:
