@@ -80,7 +80,7 @@ jobs:
         run: |
           docker build -t ${{ secrets.ACR_LOGIN_SERVER }}/$FUNCTION_IMAGE_NAME:$IMAGE_TAG \
             -f WeatherForecast.Function/WeatherForecast.Function/Dockerfile \
-            ./WeatherForecast.Function/               
+            ./WeatherForecast.Function/WeatherForecast.Function/               
 
 
       # 🚀 Push the Docker image to ACR
