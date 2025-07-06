@@ -64,20 +64,20 @@ jobs:
       with:
         creds: ${{ secrets.AZURE_CREDENTIALS_AKS }}
 
-    - name:  Get AKS Credentials
-      uses: azure/aks-set-context@v3
-      with:
-        resource-group: personalproject
-        cluster-name: aks-personalproject-dev
+    - name: Set AKS credentials
+      run: |
+        az aks get-credentials \
+          --resource-group personalproject \
+          --name aks-personalproject-dev \
+          --admin \
+          --overwrite-existing
 
     - name: Replace image tag in deployment.yaml
       run: |
-        sed -i 's|weatherforecast-webapi:latest|weatherforecast-webapi:${{ github.sha }}|g' deploy/deployment.yaml
+        sed -i "s|weatherforecast-webapi:latest|weatherforecast-webapi:${{ github.sha }}|g" deploy/deployment.yaml
 
     - name: Deploy to AKS
       run: kubectl apply -f deploy/deployment.yaml
-
-
   
   build-push-and-deploy-function:
     runs-on: ubuntu-latest    
