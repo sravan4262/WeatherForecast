@@ -44,18 +44,18 @@ jobs:
           secrets: 'WeatherForecastConnectionString'
         id: get-secret
 
-      - name: 🔄 Replace connection string in appsettings.json
-        run: |
-          $connRaw = @'
-          ${{ steps.get-secret.outputs.WeatherForecastConnectionString }}
-          '@
-              # Escape inner double quotes for JSON
-              $connEscaped = $connRaw -replace '"', '\"'
-              $jsonPath = "WeatherForecast/appsettings.json"
-              $json = Get-Content -Raw -Path $jsonPath | ConvertFrom-Json
-              $json.ConnectionStrings.WeatherForecast = $connEscaped
-              $json | ConvertTo-Json -Depth 10 | Set-Content -Path $jsonPath -Encoding UTF8
-        shell: pwsh 
+      # - name: 🔄 Replace connection string in appsettings.json
+      #   run: |
+      #     $connRaw = @'
+      #     ${{ steps.get-secret.outputs.WeatherForecastConnectionString }}
+      #     '@
+      #         # Escape inner double quotes for JSON
+      #         $connEscaped = $connRaw -replace '"', '\"'
+      #         $jsonPath = "WeatherForecast/appsettings.json"
+      #         $json = Get-Content -Raw -Path $jsonPath | ConvertFrom-Json
+      #         $json.ConnectionStrings.WeatherForecast = $connEscaped
+      #         $json | ConvertTo-Json -Depth 10 | Set-Content -Path $jsonPath -Encoding UTF8
+      #   shell: pwsh 
 
       - name: 🛠️ Set up kubectl
         uses: azure/setup-kubectl@v3
