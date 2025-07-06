@@ -67,10 +67,15 @@ jobs:
 
       - name: 👥 Get AKS Credentials
         run: |
+          mkdir -p $HOME/.kube
+          export KUBECONFIG=$HOME/.kube/config
           az aks get-credentials \
             --resource-group ${{ env.RESOURCE_GROUP }} \
             --name ${{ env.CLUSTER_NAME }} \
-            --overwrite-existing     
+            --overwrite-existing 
+          echo "✅ kubeconfig written to: $KUBECONFIG"
+          kubectl config get-contexts
+          kubectl config current-context     
 
       - name: 🔐 Login to ACR
         run: az acr login --name ${{ env.ACR_LOGIN_SERVER }}
@@ -86,7 +91,9 @@ jobs:
           sed -i "s|personalproject.azurecr.io|${{ env.ACR_LOGIN_SERVER }}|g" deploy/deployment.yaml
 
       - name: 🚀 Deploy to AKS
-        run: kubectl apply -f deploy/deployment.yaml
+        run: |
+          export KUBECONFIG=$HOME/.kube/config
+          kubectl apply -f deploy/deployment.yaml
 
 
   deploy-sql:
