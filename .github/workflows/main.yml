@@ -69,7 +69,6 @@ jobs:
         az aks get-credentials \
           --resource-group personalproject \
           --name aks-personalproject-dev \
-          --admin \
           --overwrite-existing
 
     - name: Replace image tag in deployment.yaml
