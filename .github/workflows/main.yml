@@ -64,26 +64,53 @@ jobs:
       run: |
         az aks install-cli   
 
-    - name: Set AKS credentials using Service Principal Token 
+    - name: Set AKS credentials using Service Principal Token
       run: |
-        KUBECONFIG_OUTPUT=$(az aks get-credentials \
+        # Get the kubeconfig (without trying to get an AAD token yet)
+        # --admin will try to get static credentials, which is blocked by disabled local accounts.
+        # However, it still outputs the basic cluster config (server, CA cert).
+        # We redirect stderr to stdout and allow failure using '|| true' to capture all output.
+        KUBECONFIG_CONTENT=$(az aks get-credentials \
             --resource-group personalproject \
             --name aks-personalproject-dev \
             --overwrite-existing \
             --admin 2>&1 || true)
 
+        # Log the output to understand what 'az aks get-credentials' returns.
+        # This is for debugging purposes; you might remove it once it works.
+        echo "az aks get-credentials output:"
+        echo "$KUBECONFIG_CONTENT"
+
+        # Manually get an Azure AD access token for the Service Principal
+        # This token is specifically for accessing the Kubernetes API
+        # The resource URL is correct for Azure Management Plane, which AKS API is part of.
         ACCESS_TOKEN=$(az account get-access-token \
-            --resource https://management.azure.com/ \ # Scope for Azure Management (which includes AKS API)
+            --resource "https://management.azure.com/" \
             --query accessToken \
             --output tsv)
 
+        # Log the token acquisition success (for debugging)
+        echo "Successfully acquired Azure AD access token."
+
+        # Extract the cluster name and context name using Azure CLI's default conventions.
+        # This makes it more robust than hardcoding if names ever change slightly.
+        CLUSTER_NAME="aks-personalproject-dev" # Based on your input
+        RESOURCE_GROUP="personalproject" # Based on your input
+        KUBECTL_USER_NAME="${CLUSTER_NAME}"
+        KUBECTL_CONTEXT_NAME="aks_${RESOURCE_GROUP}_${CLUSTER_NAME}" # Standard convention
+
+        echo "Updating kubeconfig for user: ${KUBECTL_USER_NAME} in context: ${KUBECTL_CONTEXT_NAME}"
+
+        # Update the kubeconfig file with the obtained token
+        # This sets the 'user' entry for your cluster to use the token.
         kubectl config set-credentials \
-            "aks-personalproject-dev" \ # Use your cluster name as the user entry name
+            "${KUBECTL_USER_NAME}" \
             --token="${ACCESS_TOKEN}"
 
+        # Ensure the current context points to the updated user and cluster.
         kubectl config set-context \
-            "aks_personalproject_dev_aks-personalproject-dev" \ # Use the exact context name
-            --user="aks-personalproject-dev"
+            "${KUBECTL_CONTEXT_NAME}" \
+            --user="${KUBECTL_USER_NAME}"
 
         echo "Kubeconfig updated with Service Principal token."
 
