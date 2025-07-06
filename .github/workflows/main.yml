@@ -86,26 +86,17 @@ jobs:
     - name: 🛠️ Setup MSBuild
       uses: microsoft/setup-msbuild@v1
 
-    - name: 🛠️ Install SqlPackage
-      run: |
-        curl -L -o sqlpackage.zip "https://aka.ms/sqlpackage-linux"
-        unzip sqlpackage.zip -d sqlpackage
-        chmod a+x sqlpackage/sqlpackage
-        sudo mv sqlpackage/sqlpackage /usr/local/bin/
-
     - name: 📦 Build SQL Project
-      run: |
-        dotnet build WeatherForecast_DB/WeatherForecast_DB/WeatherForecast_DB.sqlproj --configuration Release
+      run: msbuild WeatherForecast_DB/WeatherForecast_DB/WeatherForecast_DB.sqlproj /p:Configuration=Release
 
     - name: 🚀 Publish DACPAC to Azure SQL Database
       run: |
-        /usr/local/bin/sqlpackage \
-          /Action:Publish \
-          /SourceFile:WeatherForecast_DB/WeatherForecast_DB/bin/Release/WeatherForecast_DB.dacpac \
-          /TargetServerName:"$SQL_SERVER" \
-          /TargetDatabaseName:"$SQL_DB" \
-          /TargetUser:"$SQL_USER" \
-          /TargetPassword:"$SQL_PASSWORD" \
+        & "C:\Program Files\Microsoft SQL Server\160\DAC\bin\SqlPackage.exe" /Action:Publish `
+          /SourceFile:"WeatherForecast_DB\WeatherForecast_DB\bin\Release\WeatherForecast_DB.dacpac" `
+          /TargetServerName:"$env:SQL_SERVER" `
+          /TargetDatabaseName:"$env:SQL_DB" `
+          /TargetUser:"$env:SQL_USER" `
+          /TargetPassword:"$env:SQL_PASSWORD" `
           /p:BlockOnPossibleDataLoss=false
        
 
