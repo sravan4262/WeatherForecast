@@ -17,7 +17,7 @@ builder.Services.AddSingleton(serviceProvider =>
     return new ServiceBusClient(serviceBusConnectionString);
 });
 
-builder.Services.AddHostedService<Worker>();
+builder.Services.AddHostedService<LocationInsertedEventConsumerWorker>();
 
 var host = builder.Build();
 host.Run();

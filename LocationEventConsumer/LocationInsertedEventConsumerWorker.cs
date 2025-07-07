@@ -11,7 +11,7 @@ public class LocationInsertedEventConsumerWorker : BackgroundService
     private readonly ILogger<LocationInsertedEventConsumerWorker> _logger;
     private readonly ServiceBusProcessor _processor;
 
-    public Worker(ILogger<LocationInsertedEventConsumerWorker> logger, ServiceBusClient client)
+    public LocationInsertedEventConsumerWorker(ILogger<LocationInsertedEventConsumerWorker> logger, ServiceBusClient client)
     {
         _logger = logger;
 
