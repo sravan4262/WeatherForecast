@@ -1,4 +1,6 @@
-public class LocationUpdatedEventConsumerFunction
+namespace WeatherForecast.Function
+{
+    public class LocationUpdatedEventConsumerFunction
     {
         private readonly ILogger _logger;
 
@@ -12,7 +14,7 @@ public class LocationUpdatedEventConsumerFunction
             [ServiceBusTrigger(
                 topicName: "location-events",
                 subscriptionName: "LocationUpdated",
-                Connection = "ServiceBusConnection")] 
+                Connection = "ServiceBusConnection")]
             ServiceBusReceivedMessage message)
         {
             try
@@ -32,3 +34,4 @@ public class LocationUpdatedEventConsumerFunction
             }
         }
     }
+}

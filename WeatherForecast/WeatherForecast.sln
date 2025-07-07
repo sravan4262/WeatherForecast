@@ -13,8 +13,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WeatherForecast.Domain.Unit
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AuthenticationTester", "..\AuthenticationTester\AuthenticationTester.csproj", "{B1C85CFD-5541-4E85-81B4-DED7B1027295}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LocationEventConsumer", "..\LocationEventConsumer\LocationEventConsumer.csproj", "{A553523C-325D-4982-A6D4-ED0EDEB0071B}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
