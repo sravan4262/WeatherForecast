@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Identity.Web;
 using Microsoft.OpenApi.Models;
 using System;
+using Azure.Messaging.ServiceBus;
 using WeatherForecast.Areas.Location.V1.Mappers;
 using WeatherForecast.Areas.WeatherForecast.V1.Mappers;
 using WeatherForecast.Domain.Business.Classes;
@@ -14,10 +15,10 @@ using WeatherForecast.Domain.DataAccess.Interfaces;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.WebHost.ConfigureKestrel(serverOptions =>
-{
-    serverOptions.ListenAnyIP(80); // required for Docker/Azure
-});
+// builder.WebHost.ConfigureKestrel(serverOptions =>
+// {
+//     serverOptions.ListenAnyIP(80); // required for Docker/Azure
+// });
 
 builder.Services.AddControllers().AddJsonOptions(options =>
 {
@@ -29,6 +30,14 @@ builder.Services.AddDbContext<WeatherForecastDbContext>(options =>
 // --- Configure Azure AD Authentication ---
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddMicrosoftIdentityWebApi(builder.Configuration.GetSection("AzureAd"));
+
+builder.Services.AddSingleton(serviceProvider =>
+{
+    var connectionString = builder.Configuration["ServiceBus:ConnectionString"];
+    return new ServiceBusClient(connectionString);
+});
+builder.Services.AddScoped<ILocationEventPublisher, LocationEventPublisher>();
+   
 
 // --- Configure Authorization Policies for Scopes ---
 builder.Services.AddAuthorization(options =>
@@ -59,6 +68,8 @@ builder.Services.AddScoped<ILocationRetriever, LocationRetriever>();
 builder.Services.AddScoped<ILocationUpserter, LocationUpserter>();
 builder.Services.AddScoped<IWeatherRetriever, WeatherRetriever>();
 builder.Services.AddScoped<IWeatherUpserter, WeatherUpserter>();
+builder.Services.AddScoped<ILocationEventPublisher, LocationEventPublisher>();
+
 
 // Register Data Access Dependencies
 builder.Services.AddScoped<ILocationRepository, LocationRepository>();

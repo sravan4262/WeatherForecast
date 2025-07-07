@@ -12,16 +12,24 @@ namespace WeatherForecast.Domain.Business.Classes
     public class LocationUpserter : ILocationUpserter
     {
         private readonly ILocationRepository _locationRepository;
-        public LocationUpserter(ILocationRepository locationRepository)
+        private readonly ILocationEventPublisher _locationEventPublisher;
+        public LocationUpserter(ILocationRepository locationRepository,ILocationEventPublisher locationEventPublisher)
         {
             _locationRepository = locationRepository;
+            _locationEventPublisher = locationEventPublisher;
         }
 
         public async Task<int> AddAsync(Location location)
         {
             if(location is null)
             throw new ArgumentNullException(nameof(location));
-            return await _locationRepository.InsertLocationAsync(location);
+            var id = await _locationRepository.InsertLocationAsync(location);
+            // await _locationEventPublisher.PublishAsync(new LocationEvent
+            //     {
+            //         EventType = "LocationInserted",
+            //         Data = location
+            //     });
+            return id;
         }
 
         public async Task DeleteAsync(int id)
@@ -35,7 +43,13 @@ namespace WeatherForecast.Domain.Business.Classes
         {
             if (location is null)
                 throw new ArgumentNullException(nameof(location));
-           return await _locationRepository.UpdateLocationAsync(location);
+           var id = await _locationRepository.UpdateLocationAsync(location);
+        //    await _locationEventPublisher.PublishAsync(new LocationEvent
+        //         {
+        //             EventType = "LocationUpdated",
+        //             Data = location
+        //         });
+            return id;
         }
     }
 }

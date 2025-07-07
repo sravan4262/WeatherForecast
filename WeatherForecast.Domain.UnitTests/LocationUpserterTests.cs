@@ -11,17 +11,19 @@ namespace WeatherForecast.Domain.UnitTests
     public class LocationUpserterTests
     {
         private LocationUpserter _locationUpserter;
+        private Mock<ILocationEventPublisher> _locationEventPublisherMock;
         private Mock<ILocationRepository> _locationRepositoryMock;
 
         [SetUp]
         public void Setup()
         {
             _locationRepositoryMock = new Mock<ILocationRepository>();
+            _locationEventPublisherMock = new Mock<ILocationEventPublisher>();
             _locationRepositoryMock.Setup(x => x.InsertLocationAsync(It.IsAny<Location>())).ReturnsAsync(1); // Assuming 1 for successful add
             _locationRepositoryMock.Setup(x => x.UpdateLocationAsync(It.IsAny<Location>())).ReturnsAsync(1); // Assuming 1 for successful update
             _locationRepositoryMock.Setup(x => x.DeleteLocationAsyncById(It.IsAny<int>())).Returns(Task.CompletedTask);
 
-            _locationUpserter = new LocationUpserter(_locationRepositoryMock.Object);
+            _locationUpserter = new LocationUpserter(_locationRepositoryMock.Object,_locationEventPublisherMock.Object);
         }
 
 
