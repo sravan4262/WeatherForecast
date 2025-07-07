@@ -404,6 +404,7 @@ FodyWeavers.xsd
 **/*.csproj.AssemblyReference.cache
 **/*.AssemblyInfolnputs.cache
 .nuget/          
+**appsettings.json
 # The .nuget directory itself, often contains cache or tool files
 
 # 3. Visual Studio / IDE Files
