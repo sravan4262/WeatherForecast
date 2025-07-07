@@ -104,14 +104,6 @@ var app = builder.Build();
 
 app.UseHttpsRedirection();
 
-if (!app.Environment.IsDevelopment())
-{
-    builder.WebHost.ConfigureKestrel(serverOptions =>
-    {
-        serverOptions.ListenAnyIP(80); // required for Docker/Azure
-    });
-}
-
 app.UseAuthentication();
 app.UseAuthorization();
 
