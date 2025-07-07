@@ -31,11 +31,12 @@ builder.Services.AddDbContext<WeatherForecastDbContext>(options =>
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddMicrosoftIdentityWebApi(builder.Configuration.GetSection("AzureAd"));
 
-builder.Services.AddSingleton(serviceProvider =>
-{
-    var connectionString = builder.Configuration["ServiceBus:ConnectionString"];
-    return new ServiceBusClient(connectionString);
-});
+// builder.Services.AddSingleton(serviceProvider =>
+// {
+//     var connectionString = builder.Configuration["ServiceBus:ConnectionString"];
+//     return new ServiceBusClient(connectionString);
+// });
+
 builder.Services.AddScoped<ILocationEventPublisher, LocationEventPublisher>();
    
 
