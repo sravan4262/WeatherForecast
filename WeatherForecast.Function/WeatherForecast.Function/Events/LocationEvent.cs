@@ -1,3 +1,5 @@
+using System;
+
 public class LocationEvent
 {
     public string EventType { get; set; }
