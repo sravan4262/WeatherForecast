@@ -33,7 +33,7 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 // --- Configure Authorization Policies for Scopes ---
 builder.Services.AddAuthorization(options =>
 {
-    options.AddPolicy("RequiresForecastRetrieveAllScope", policy =>
+    options.AddPolicy("location.locations", policy =>
     {
         policy.RequireAuthenticatedUser(); // Must be authenticated
         policy.RequireClaim("http://schemas.microsoft.com/identity/claims/scope", "location.locations");
