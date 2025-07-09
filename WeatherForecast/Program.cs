@@ -12,6 +12,8 @@ using WeatherForecast.Domain.Business.Interfaces;
 using WeatherForecast.Domain.DataAccess;
 using WeatherForecast.Domain.DataAccess.Classes;
 using WeatherForecast.Domain.DataAccess.Interfaces;
+using Azure.AI.OpenAI;
+using Azure;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -23,9 +25,40 @@ builder.WebHost.ConfigureKestrel(serverOptions =>
 builder.Services.AddControllers().AddJsonOptions(options =>
 {
     options.JsonSerializerOptions.PropertyNamingPolicy = null;
-}); 
+});
+
+
+builder.Services.AddSingleton(sp =>
+{
+    var configuration = sp.GetRequiredService<IConfiguration>();
+
+    string endpoint = configuration["AzureOpenAI:Endpoint"]
+                      ?? throw new InvalidOperationException("AzureOpenAI:Endpoint not found in configuration.");
+    string apiKey = configuration["AzureOpenAI:ApiKey"]
+                    ?? throw new InvalidOperationException("AzureOpenAI:ApiKey not found in configuration.");
+
+    return new AzureOpenAIClient(new Uri(endpoint), new AzureKeyCredential(apiKey));
+});
+
+
 builder.Services.AddDbContext<WeatherForecastDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("WeatherForecast")));
+
+
+
+builder.Services.AddScoped<IAzureOpenAIService, AzureOpenAiService>(sp =>
+{
+    var openAIClient = sp.GetRequiredService<AzureOpenAIClient>();
+
+    var configuration = sp.GetRequiredService<IConfiguration>();
+    string chatDeploymentName = configuration["AzureOpenAI:ChatDeploymentName"]
+                                ?? throw new InvalidOperationException("AzureOpenAI:ChatDeploymentName not found in configuration.");
+
+    var dbContext = sp.GetRequiredService<WeatherForecastDbContext>();
+
+    return new AzureOpenAiService(openAIClient, chatDeploymentName, dbContext);
+});
+
 
 // --- Configure Azure AD Authentication ---
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
@@ -116,8 +149,8 @@ var app = builder.Build();
 
 app.UseHttpsRedirection();
 
-app.UseAuthentication();
-app.UseAuthorization();
+    app.UseAuthentication();
+    app.UseAuthorization();
 
 app.MapControllers();
 
